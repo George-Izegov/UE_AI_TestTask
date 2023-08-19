@@ -13,5 +13,15 @@ UCLASS()
 class AI_TESTTASK_API ABaseAICharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
-	
+
+public:
+
+	ABaseAICharacter();
+
+protected:
+
+	virtual void BeginPlay() override;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector SpawnOriginLocation;
 };

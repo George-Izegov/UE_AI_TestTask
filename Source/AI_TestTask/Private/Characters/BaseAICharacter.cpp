@@ -3,3 +3,13 @@
 
 #include "Characters/BaseAICharacter.h"
 
+ABaseAICharacter::ABaseAICharacter()
+{
+}
+
+void ABaseAICharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SpawnOriginLocation = GetActorLocation();
+}

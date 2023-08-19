@@ -15,6 +15,9 @@ class ABaseCharacter : public ACharacter
 public:
 	ABaseCharacter();
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateWalkSpeed(float NewSpeed);
+
 protected:
 	
 	// To add mapping context

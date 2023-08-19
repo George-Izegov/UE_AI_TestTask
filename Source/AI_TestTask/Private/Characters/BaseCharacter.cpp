@@ -34,6 +34,11 @@ ABaseCharacter::ABaseCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void ABaseCharacter::UpdateWalkSpeed(float NewSpeed)
+{
+	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+}
+
 void ABaseCharacter::BeginPlay()
 {
 	// Call the base class  
