@@ -37,10 +37,21 @@ class APlayerCharacter : public ABaseCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	/** Aim Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AimAction;
+
+	/** Shot Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ShotAction;
+
+	bool IsAiming = false;
+
 public:
 	APlayerCharacter();
 	
-
+	virtual void Tick(float DeltaTime) override;
+	
 protected:
 
 	/** Called for movement input */
@@ -48,7 +59,12 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
+
+	void StartAiming();
+	void StopAiming();
+	void ProcessAiming();
+
+	void Shot();
 
 protected:
 	// APawn interface

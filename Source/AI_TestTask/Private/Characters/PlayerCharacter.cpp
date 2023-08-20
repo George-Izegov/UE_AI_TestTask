@@ -30,6 +30,13 @@ APlayerCharacter::APlayerCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	ProcessAiming();
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	// Call the base class  
@@ -63,6 +70,12 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 
+		//Aiming
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &APlayerCharacter::StartAiming);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopAiming);
+
+		//Shooting
+		EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shot);
 	}
 }
 
@@ -100,6 +113,43 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void APlayerCharacter::StartAiming()
+{
+	IsAiming = true;
+	bUseControllerRotationYaw = true;
+}
+
+void APlayerCharacter::StopAiming()
+{
+	IsAiming = false;
+	bUseControllerRotationYaw = false;
+}
+
+void APlayerCharacter::ProcessAiming()
+{
+	if (!IsAiming)
+		return;
+
+	FHitResult HitResult;
+	FVector StartTrace = CameraBoom->GetComponentLocation();
+	FVector EndTrace = StartTrace + CameraBoom->GetForwardVector() * 10000.0f;
+
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECollisionChannel::ECC_Visibility);
+
+	FVector EndLocation = EndTrace;
+	if (HitResult.bBlockingHit)
+	{
+		EndLocation = HitResult.Location;
+	}
+
+	
+}
+
+void APlayerCharacter::Shot()
+{
+	
 }
 
 
