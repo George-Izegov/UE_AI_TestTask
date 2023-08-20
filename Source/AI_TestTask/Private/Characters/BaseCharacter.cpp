@@ -3,6 +3,7 @@
 #include "Characters/BaseCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Perception/AISense_Damage.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,9 +57,9 @@ void ABaseCharacter::HandleDamage(AActor* DamagedActor, float Damage, const UDam
 	if (IsDead)
 		return;
 
+	UAISense_Damage::ReportDamageEvent(GetWorld(), DamagedActor, DamageCauser, Damage, GetActorLocation(), GetActorLocation());
+	
 	Health -= Damage;
-
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::SanitizeFloat(Damage));
 
 	if (Health <= 0.0f)
 		HandleDeath();

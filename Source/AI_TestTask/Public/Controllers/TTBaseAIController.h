@@ -13,5 +13,10 @@ UCLASS()
 class AI_TESTTASK_API ATTBaseAIController : public AAIController
 {
 	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void ActivateAI(bool IsActive);
 	
 };

@@ -58,6 +58,9 @@ class APlayerCharacter : public ABaseCharacter
 	UPROPERTY(EditAnywhere)
 	float MaxWalkNoiseRange = 1000.0f;
 
+	UPROPERTY(EditAnywhere)
+	float EyeLaserDamage = 10.0f;
+
 public:
 	APlayerCharacter();
 	

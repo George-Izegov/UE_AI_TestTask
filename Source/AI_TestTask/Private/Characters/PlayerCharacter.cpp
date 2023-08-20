@@ -133,18 +133,12 @@ void APlayerCharacter::StartAiming()
 {
 	IsAiming = true;
 	bUseControllerRotationYaw = true;
-
-	LeftEyeLaser->SetHiddenInGame(false);
-	RightEyeLaser->SetHiddenInGame(false);
 }
 
 void APlayerCharacter::StopAiming()
 {
 	IsAiming = false;
 	bUseControllerRotationYaw = false;
-
-	LeftEyeLaser->SetHiddenInGame(true);
-	RightEyeLaser->SetHiddenInGame(true);
 }
 
 void APlayerCharacter::ProcessAiming()
@@ -170,9 +164,7 @@ void APlayerCharacter::ProcessAimingForEyeLaser(UStaticMeshComponent* EyeLaser)
 		EndLocation = HitResult.Location;
 	}
 
-	FVector NewScale = EyeLaser->GetRelativeScale3D();
-	NewScale.Z = FVector::Distance(StartTrace, EndLocation) / 100.0f;
-	EyeLaser->SetRelativeScale3D(NewScale);
+	DrawDebugLine(GetWorld(), StartTrace, EndLocation, FColor::Red, false, -1, 0, 2.0f);
 }
 
 void APlayerCharacter::Shot()
@@ -199,7 +191,7 @@ void APlayerCharacter::ShotForEyeLaser(UStaticMeshComponent* EyeLaser)
 
 	if (HitResult.GetActor() && HitResult.GetActor()->CanBeDamaged())
 	{
-		HitResult.GetActor()->TakeDamage(10.0f, FDamageEvent(), Controller, this);
+		HitResult.GetActor()->TakeDamage(EyeLaserDamage, FDamageEvent(), Controller, this);
 	}
 
 	SpawnShotFX(EndLocation);
