@@ -21,6 +21,14 @@ class APlayerCharacter : public ABaseCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 	
+	/** leftEyeLaser Mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* LeftEyeLaser;
+
+	/** leftEyeLaser Mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* RightEyeLaser;
+	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -47,6 +55,9 @@ class APlayerCharacter : public ABaseCharacter
 
 	bool IsAiming = false;
 
+	UPROPERTY(EditAnywhere)
+	float MaxWalkNoiseRange = 1000.0f;
+
 public:
 	APlayerCharacter();
 	
@@ -63,8 +74,12 @@ protected:
 	void StartAiming();
 	void StopAiming();
 	void ProcessAiming();
+	void ProcessAimingForEyeLaser(UStaticMeshComponent* EyeLaser);
 
 	void Shot();
+	void ShotForEyeLaser(UStaticMeshComponent* EyeLaser);
+	UFUNCTION(BlueprintImplementableEvent)
+	void SpawnShotFX(const FVector& Location);
 
 protected:
 	// APawn interface

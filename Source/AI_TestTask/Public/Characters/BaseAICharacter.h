@@ -22,6 +22,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	virtual void HandleDeath() override;
+
 	UPROPERTY(BlueprintReadOnly)
 	FVector SpawnOriginLocation;
 };

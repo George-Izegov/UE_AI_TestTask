@@ -13,3 +13,10 @@ void ABaseAICharacter::BeginPlay()
 
 	SpawnOriginLocation = GetActorLocation();
 }
+
+void ABaseAICharacter::HandleDeath()
+{
+	Super::HandleDeath();
+
+	DetachFromControllerPendingDestroy();
+}

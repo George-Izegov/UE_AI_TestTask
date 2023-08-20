@@ -8,6 +8,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Engine/DamageEvents.h"
+#include "Perception/AISense_Hearing.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,6 +30,14 @@ APlayerCharacter::APlayerCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	LeftEyeLaser = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftEyeLaser"));
+	LeftEyeLaser->SetupAttachment(GetMesh(), "leftEyeSocket");
+	LeftEyeLaser->bHiddenInGame = true;
+
+	RightEyeLaser = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightEyeLaser"));
+	RightEyeLaser->SetupAttachment(GetMesh(), "rightEyeSocket");
+	RightEyeLaser->bHiddenInGame = true;
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -75,7 +85,7 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopAiming);
 
 		//Shooting
-		EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shot);
+		EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Started, this, &APlayerCharacter::Shot);
 	}
 }
 
@@ -99,6 +109,10 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+
+		const float NoisePercentage = GetVelocity().Size() / GetMovementComponent()->GetMaxSpeed();
+		
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1, this, MaxWalkNoiseRange*NoisePercentage);
 	}
 }
 
@@ -119,12 +133,18 @@ void APlayerCharacter::StartAiming()
 {
 	IsAiming = true;
 	bUseControllerRotationYaw = true;
+
+	LeftEyeLaser->SetHiddenInGame(false);
+	RightEyeLaser->SetHiddenInGame(false);
 }
 
 void APlayerCharacter::StopAiming()
 {
 	IsAiming = false;
 	bUseControllerRotationYaw = false;
+
+	LeftEyeLaser->SetHiddenInGame(true);
+	RightEyeLaser->SetHiddenInGame(true);
 }
 
 void APlayerCharacter::ProcessAiming()
@@ -132,8 +152,14 @@ void APlayerCharacter::ProcessAiming()
 	if (!IsAiming)
 		return;
 
+	ProcessAimingForEyeLaser(LeftEyeLaser);
+	ProcessAimingForEyeLaser(RightEyeLaser);
+}
+
+void APlayerCharacter::ProcessAimingForEyeLaser(UStaticMeshComponent* EyeLaser)
+{
 	FHitResult HitResult;
-	FVector StartTrace = CameraBoom->GetComponentLocation();
+	FVector StartTrace = EyeLaser->GetComponentLocation();
 	FVector EndTrace = StartTrace + CameraBoom->GetForwardVector() * 10000.0f;
 
 	GetWorld()->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECollisionChannel::ECC_Visibility);
@@ -144,12 +170,39 @@ void APlayerCharacter::ProcessAiming()
 		EndLocation = HitResult.Location;
 	}
 
-	
+	FVector NewScale = EyeLaser->GetRelativeScale3D();
+	NewScale.Z = FVector::Distance(StartTrace, EndLocation) / 100.0f;
+	EyeLaser->SetRelativeScale3D(NewScale);
 }
 
 void APlayerCharacter::Shot()
 {
-	
+	ShotForEyeLaser(LeftEyeLaser);
+	ShotForEyeLaser(RightEyeLaser);
+
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1, this);
+}
+
+void APlayerCharacter::ShotForEyeLaser(UStaticMeshComponent* EyeLaser)
+{
+	FHitResult HitResult;
+	FVector StartTrace = EyeLaser->GetComponentLocation();
+	FVector EndTrace = StartTrace + CameraBoom->GetForwardVector() * 10000.0f;
+
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECollisionChannel::ECC_Visibility);
+
+	FVector EndLocation = EndTrace;
+	if (HitResult.bBlockingHit)
+	{
+		EndLocation = HitResult.Location;
+	}
+
+	if (HitResult.GetActor() && HitResult.GetActor()->CanBeDamaged())
+	{
+		HitResult.GetActor()->TakeDamage(10.0f, FDamageEvent(), Controller, this);
+	}
+
+	SpawnShotFX(EndLocation);
 }
 
 

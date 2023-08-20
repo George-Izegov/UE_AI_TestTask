@@ -43,6 +43,33 @@ void ABaseCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	OnTakeAnyDamage.AddDynamic(this, &ABaseCharacter::HandleDamage);
+}
+
+void ABaseCharacter::HandleDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (DamagedActor != this)
+		return;
+	
+	if (IsDead)
+		return;
+
+	Health -= Damage;
+
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::SanitizeFloat(Damage));
+
+	if (Health <= 0.0f)
+		HandleDeath();
+}
+
+void ABaseCharacter::HandleDeath()
+{
+	IsDead = true;
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 
